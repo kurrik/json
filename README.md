@@ -7,8 +7,9 @@ Some differences from the standard Golang json package:
   * Does not use reflection, parses into standard map/slice/value structs.
   * Parses numbers into int64 where possible, float64 otherwise.
   * Faster!  Probably due to no reflection:
-    > BenchmarkParseTweet	   10000	    155714 ns/op
-    > BenchmarkCustomJSON	   20000	     85822 ns/op
+
+> BenchmarkParseTweet	   10000	    155714 ns/op
+> BenchmarkCustomJSON	   20000	     85822 ns/op
 
 Installing
 ----------
