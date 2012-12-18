@@ -53,3 +53,10 @@ func BenchmarkBucket(b *testing.B) {
 		Unmarshal(RAW_LIST, &t)
 	}
 }
+
+func BenchmarkUntypedBucket(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		var t []interface{}
+		Unmarshal(RAW_LIST, &t)
+	}
+}
