@@ -31,9 +31,25 @@ func BenchmarkStdJSON(b *testing.B) {
 	}
 }
 
-func BenchmarkCustomJSON(b *testing.B) {
+func BenchmarkJSON(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		t := &map[string]interface{}{}
 		Unmarshal(RAW, t)
+	}
+}
+
+var RAW_LIST = []byte("[{\"foo\":1},{\"foo\":2}]")
+
+func BenchmarkStdBucket(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		var t BucketList
+		stdjson.Unmarshal(RAW_LIST, &t)
+	}
+}
+
+func BenchmarkBucket(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		var t BucketList
+		Unmarshal(RAW_LIST, &t)
 	}
 }

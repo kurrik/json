@@ -327,6 +327,34 @@ func Unmarshal(data []byte, v interface{}) error {
 	for sv.Kind() == reflect.Ptr {
 		sv = sv.Elem()
 	}
+	var (
+		rvt = rv.Type()
+		svt = sv.Type()
+	)
+	if !svt.AssignableTo(rvt) {
+		if rv.Kind() != reflect.Slice && sv.Kind() != reflect.Slice {
+			return fmt.Errorf("Cannot assign %v to %v", svt, rvt)
+		}
+		var (
+			mapi  map[string]interface{}
+			mapt  = reflect.TypeOf(mapi)
+			svte  = svt.Elem()
+			rvte  = rvt.Elem()
+			ismap bool
+		)
+		_, ismap = sv.Index(0).Interface().(map[string]interface{})
+		if !(ismap && mapt.AssignableTo(rvte)) {
+			return fmt.Errorf("Cannot assign %v to %v", svte, rvte)
+		}
+		var (
+			ssv = reflect.MakeSlice(rvt, sv.Len(), sv.Cap())
+		)
+		for i := 0; i < sv.Len(); i++ {
+			v := sv.Index(i).Interface().(map[string]interface{})
+			ssv.Index(i).Set(reflect.ValueOf(v))
+		}
+		sv = ssv
+	}
 	rv.Set(sv)
 	return nil
 }

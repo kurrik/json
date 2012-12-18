@@ -116,3 +116,25 @@ func TestParseArray(t *testing.T) {
 		}
 	}
 }
+
+type Bucket map[string]interface{}
+type BucketList []Bucket
+
+func TestParseStruct(t *testing.T) {
+	var (
+		encoded = []byte("[{\"foo\":1},{\"foo\":2}]")
+		gold = BucketList{Bucket{"foo":1}, Bucket{"foo":2}}
+		parsed BucketList
+	)
+	if err := Unmarshal(encoded, &parsed); err != nil {
+		t.Fatalf("%v", err)
+	}
+	if len(parsed) != len(gold) {
+		t.Fatalf("Parsed len %v != gold len %v", len(parsed), len(gold))
+	}
+	for i, v := range parsed {
+		if fmt.Sprintf("%v", v) != fmt.Sprintf("%v", gold[i]) {
+			t.Errorf("%v: %v != %v", i, v, gold[i])
+		}
+	}
+}
