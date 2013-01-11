@@ -20,12 +20,12 @@ import (
 )
 
 type TestCase struct {
-	Raw string
+	Raw    string
 	Result interface{}
 }
 
 var cases = map[string]TestCase{
-	"Simple object" : TestCase{
+	"Simple object": TestCase{
 		Raw: "{\"foo\":\"bar\"}",
 		Result: map[string]interface{}{
 			"foo": "bar",
@@ -35,7 +35,7 @@ var cases = map[string]TestCase{
 
 func TestCases(t *testing.T) {
 	var (
-		err error
+		err    error
 		decode interface{}
 	)
 	for desc, testcase := range cases {
