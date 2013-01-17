@@ -187,3 +187,25 @@ func TestParseTwitterTimeline(t *testing.T) {
 		t.Fatalf("Could not parse nested Tweet text.")
 	}
 }
+
+type Tweet map[string]interface{}
+type Timeline []Tweet
+
+func TestParseTwitterTimelineToType(t *testing.T) {
+	var (
+		parsed = &Timeline{}
+		raw    []byte
+		err    error
+		path   string
+	)
+	path = "data/twitter_timeline.json"
+	if raw, err = ioutil.ReadFile(path); err != nil {
+		t.Fatalf("Could not read data file: %v", path)
+	}
+	if err = Unmarshal(raw, &parsed); err != nil {
+		t.Fatalf("Could not parse Twitter user: %v", err)
+	}
+	if (*parsed)[0]["text"].(string)[0:15] != "We are updating" {
+		t.Fatalf("Could not parse nested structured Tweet text.")
+	}
+}
