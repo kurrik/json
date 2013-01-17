@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"strconv"
 )
 
 const (
@@ -101,9 +102,15 @@ func (s *State) nextType() int {
 	return -1
 }
 
-func (s *State) readString() error {
-	var c byte
-	var atstart bool = false
+func (s *State) readString() (err error) {
+	var (
+		c       byte
+		start   int
+		buf     *bytes.Buffer
+		atstart bool = false
+		more    bool = true
+		utf     bool = false
+	)
 	for atstart == false {
 		c = s.data[s.i]
 		switch {
@@ -123,14 +130,19 @@ func (s *State) readString() error {
 		}
 	}
 	s.i++
-	var start int = s.i
-	var buf = new(bytes.Buffer)
-	var more = true
+	start = s.i
+	buf = new(bytes.Buffer)
 	for more {
 		c = s.data[s.i]
 		switch {
 		case c == '\\':
 			buf.Write(s.data[start:s.i])
+			if len(s.data) > s.i+6 {
+				if s.data[s.i+1] == 'u' {
+					utf = true
+					buf.WriteString("\\")
+				}
+			}
 			s.i++
 			start = s.i
 		case c == '"':
@@ -142,7 +154,10 @@ func (s *State) readString() error {
 	}
 	buf.Write(s.data[start : s.i-1])
 	s.v = buf.String()
-	return nil
+	if utf == true {
+		s.v, err = strconv.Unquote(fmt.Sprintf("\"%v\"", s.v))
+	}
+	return
 }
 
 func (s *State) readNumber() (err error) {
