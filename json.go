@@ -18,8 +18,9 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
-	"strings"
 	"strconv"
+	"strings"
+	"unicode/utf16"
 )
 
 const (
@@ -158,7 +159,10 @@ func (s *State) readString() (err error) {
 	buf.Write(s.data[start : s.i-1])
 	s.v = buf.String()
 	if utf == true {
-		s.v, err = strconv.Unquote(fmt.Sprintf("\"%v\"", s.v))
+		var quoted = fmt.Sprintf("\"%v\"", s.v)
+		if s.v, err = strconv.Unquote(quoted); err == nil {
+			s.v = decodeSurrogates(s.v.(string))
+		}
 	}
 	return
 }
@@ -211,6 +215,31 @@ func (s *State) readNumber() (err error) {
 		s.v = val * mult
 	}
 	return
+}
+
+// Decodes UTF-16 surrogate pairs (such as \uD834\uDD1E).
+func decodeSurrogates(s string) string {
+	var (
+		r1  rune = 0
+		buf      = new(bytes.Buffer)
+	)
+	for _, r := range s {
+		if utf16.IsSurrogate(r) {
+			if r1 == 0 {
+				r1 = r
+			} else {
+				buf.WriteRune(utf16.DecodeRune(r1, r))
+				r1 = 0
+			}
+		} else {
+			if r1 != 0 {
+				buf.WriteRune(r1)
+				r1 = 0
+			}
+			buf.WriteRune(r)
+		}
+	}
+	return buf.String()
 }
 
 type EndMap struct{}
