@@ -25,10 +25,62 @@ type TestCase struct {
 }
 
 var cases = map[string]TestCase{
-	"Simple object": TestCase{
+	"Number": TestCase{
+		Raw: "1234",
+		Result: int64(1234),
+	},
+	"String": TestCase{
+		Raw: "\"foobar\"",
+		Result: "foobar",
+	},
+	"String with encoded UTF-8": TestCase{
+		Raw: "\"\\u6211\\u7231\\u4f60\"",
+		Result: "我爱你",
+	},
+	"Object": TestCase{
 		Raw: "{\"foo\":\"bar\"}",
 		Result: map[string]interface{}{
 			"foo": "bar",
+		},
+	},
+	"Object with spaces": TestCase{
+		Raw: "{ \"foo\" : \"bar\" }",
+		Result: map[string]interface{}{
+			"foo": "bar",
+		},
+	},
+	"Object with tabs": TestCase{
+		Raw: "{	\"foo\"	:	\"bar\"	}",
+		Result: map[string]interface{}{
+			"foo": "bar",
+		},
+	},
+	"Array": TestCase{
+		Raw: "[1234,\"foobar\"]",
+		Result: []interface{}{
+			int64(1234),
+			"foobar",
+		},
+	},
+	"Array with spaces": TestCase{
+		Raw: "[ 1234 , \"foobar\" ]",
+		Result: []interface{}{
+			int64(1234),
+			"foobar",
+		},
+	},
+	"Array with tabs": TestCase{
+		Raw: "[	1234	,	\"foobar\"	]",
+		Result: []interface{}{
+			int64(1234),
+			"foobar",
+		},
+	},
+	"Array with multiple tabs": TestCase{
+		Raw: "[				1234,\"foobar\"]",
+		Result: []interface{}{
+			int64(1234),
+			"foobar",
 		},
 	},
 }
@@ -43,8 +95,9 @@ func TestCases(t *testing.T) {
 			t.Fatalf("Error decoding '%v'", desc)
 		}
 		if !reflect.DeepEqual(decode, testcase.Result) {
-			t.Fatalf(
-				"Problem decoding '%v' Expected: %v, Got %v",
+			t.Logf("%v\n", reflect.TypeOf(decode))
+			t.Logf("%v\n", reflect.TypeOf(testcase.Result))
+			t.Fatalf("Problem decoding '%v' Expected: %v, Got %v",
 				desc, testcase.Result, decode)
 		}
 	}
