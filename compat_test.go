@@ -37,6 +37,18 @@ var cases = map[string]TestCase{
 		Raw: "\"\\u6211\\u7231\\u4f60\"",
 		Result: "我爱你",
 	},
+	"String with big-U encoded multibyte UTF-8": TestCase{
+		Raw: "\"\\U0001D11E\"",
+		Result: "𝄞",
+	},
+	"String with small-U encoded multibyte UTF-8": TestCase{
+		Raw: "\"\\uD834\\uDD1E\"",
+		Result: "𝄞",
+	},
+	"String with hex encoded multibyte UTF-8": TestCase{
+		Raw: "\"\\xF0\\x9D\\x84\\x9E\"",
+		Result: "𝄞",
+	},
 	"Object": TestCase{
 		Raw: "{\"foo\":\"bar\"}",
 		Result: map[string]interface{}{
