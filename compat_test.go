@@ -61,6 +61,12 @@ var cases = map[string]TestCase{
 			"foo": "bar",
 		},
 	},
+	"Object with UTF-8 value": TestCase{
+		Raw: "{ \"foo\" : \"\\u6211\" }",
+		Result: map[string]interface{}{
+			"foo": "我",
+		},
+	},
 	"Object with tabs": TestCase{
 		Raw: "{	\"foo\"	:	\"bar\"	}",
 		Result: map[string]interface{}{

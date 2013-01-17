@@ -159,8 +159,10 @@ func (s *State) readString() (err error) {
 	buf.Write(s.data[start : s.i-1])
 	s.v = buf.String()
 	if utf == true {
-		var quoted = fmt.Sprintf("\"%v\"", s.v)
-		if s.v, err = strconv.Unquote(quoted); err == nil {
+		var utfstr = s.v.(string)
+		utfstr = strings.Replace(utfstr, "\"", "\\\"", -1)
+		utfstr = fmt.Sprintf("\"%v\"", utfstr)
+		if s.v, err = strconv.Unquote(utfstr); err == nil {
 			s.v = decodeSurrogates(s.v.(string))
 		}
 	}
