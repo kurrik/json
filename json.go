@@ -137,11 +137,14 @@ func (s *State) readString() (err error) {
 		switch {
 		case c == '\\':
 			buf.Write(s.data[start:s.i])
-			if len(s.data) > s.i+6 {
-				if s.data[s.i+1] == 'u' {
-					utf = true
-					buf.WriteString("\\")
-				}
+			switch {
+			case len(s.data) > s.i+8 && s.data[s.i+1] == 'U':
+				fallthrough
+			case len(s.data) > s.i+6 && s.data[s.i+1] == 'u':
+				fallthrough
+			case len(s.data) > s.i+4 && s.data[s.i+1] == 'x':
+				utf = true
+				buf.WriteString("\\")
 			}
 			s.i++
 			start = s.i
