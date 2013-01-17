@@ -74,38 +74,53 @@ func (s *State) Read() (err error) {
 }
 
 func (s *State) nextType() int {
-	c := s.data[s.i]
-	switch {
-	case c == '"':
-		return STRING
-	case '0' <= c && c <= '9' || c == '-':
-		return NUMBER
-	case c == '[':
-		return ARRAY
-	case c == ']':
-		return ENDARRAY
-	case c == '{':
-		return MAP
-	case c == 't' || c == 'T' || c == 'f' || c == 'F':
-		return BOOL
-	case c == 'n':
-		return NULL
+	for {
+		c := s.data[s.i]
+		switch {
+		case c == ' ':
+			fallthrough
+		case c == '\t':
+			s.i++
+			break
+		case c == '"':
+			return STRING
+		case '0' <= c && c <= '9' || c == '-':
+			return NUMBER
+		case c == '[':
+			return ARRAY
+		case c == ']':
+			return ENDARRAY
+		case c == '{':
+			return MAP
+		case c == 't' || c == 'T' || c == 'f' || c == 'F':
+			return BOOL
+		case c == 'n':
+			return NULL
+		}
 	}
 	return -1
 }
 
 func (s *State) readString() error {
 	var c byte
-	c = s.data[s.i]
-	switch {
-	case c == '"':
-		break
-	case c == '}':
-		s.i++
-		return EndMap{}
-	case c == ']':
-		s.i++
-		return EndArray{}
+	var atstart bool = false
+	for atstart == false {
+		c = s.data[s.i]
+		switch {
+		case c == ' ':
+			fallthrough
+		case c == '\t':
+			s.i++
+		case c == '"':
+			atstart = true
+			break
+		case c == '}':
+			s.i++
+			return EndMap{}
+		case c == ']':
+			s.i++
+			return EndArray{}
+		}
 	}
 	s.i++
 	var start int = s.i
