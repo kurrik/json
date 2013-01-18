@@ -29,6 +29,18 @@ var cases = map[string]TestCase{
 		Raw: "1234",
 		Result: int64(1234),
 	},
+	"Number - negative": TestCase{
+		Raw: "-1234",
+		Result: int64(-1234),
+	},
+	"Number - float": TestCase{
+		Raw: "1234.5678",
+		Result: float64(1234.5678),
+	},
+	"Number - negative float": TestCase{
+		Raw: "-1234.5678",
+		Result: float64(-1234.5678),
+	},
 	"String": TestCase{
 		Raw: "\"foobar\"",
 		Result: "foobar",
@@ -71,6 +83,12 @@ var cases = map[string]TestCase{
 		Raw: "{	\"foo\"	:	\"bar\"	}",
 		Result: map[string]interface{}{
 			"foo": "bar",
+		},
+	},
+	"Object with empty nested object": TestCase{
+		Raw: "{ \"foo\": {}}",
+		Result: map[string]interface{}{
+			"foo": map[string]interface{}{},
 		},
 	},
 	"Array": TestCase{

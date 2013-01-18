@@ -212,7 +212,7 @@ func (s *State) readNumber() (err error) {
 		s.i++
 	}
 	if places > 0 {
-		s.v = valf + (float64(val)/float64(places))*float64(mult)
+		s.v = (valf + float64(val)/float64(places)) * float64(mult)
 	} else {
 		s.v = val * mult
 	}
@@ -299,7 +299,10 @@ func (s *State) readMap() (err error) {
 	m = make(map[string]interface{})
 	for {
 		if err = s.readString(); err != nil {
-			return
+			if _, ok := err.(EndMap); !ok {
+				return
+			}
+			break
 		}
 		key = s.v.(string)
 		if err = s.readColon(); err != nil {
@@ -414,8 +417,7 @@ func Unmarshal(data []byte, v interface{}) error {
 			ssv = reflect.MakeSlice(rvt, sv.Len(), sv.Cap())
 		)
 		for i := 0; i < sv.Len(); i++ {
-			// Really weird - if the _ is removed this fails.
-			v, _ := sv.Index(i).Interface().(map[string]interface{})
+			v := sv.Index(i).Interface().(map[string]interface{})
 			ssv.Index(i).Set(reflect.ValueOf(v))
 		}
 		sv = ssv

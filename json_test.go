@@ -182,6 +182,9 @@ func TestParseTwitterTimeline(t *testing.T) {
 	if err = Unmarshal(raw, &parsed); err != nil {
 		t.Fatalf("Could not parse Twitter user: %v", err)
 	}
+	if len(parsed) != 100 {
+		t.Fatalf("Expected 100 nested Tweets, got: %v", len(parsed))
+	}
 	status = parsed[0].(map[string]interface{})
 	if status["text"].(string)[0:15] != "We are updating" {
 		t.Fatalf("Could not parse nested Tweet text.")
@@ -191,12 +194,50 @@ func TestParseTwitterTimeline(t *testing.T) {
 type Tweet map[string]interface{}
 type Timeline []Tweet
 
+func TestParseTwitterTweetToType(t *testing.T) {
+	var (
+		parsed = &Tweet{}
+		raw    []byte
+		err    error
+		path   string
+		place  map[string]interface{}
+		bbox   map[string]interface{}
+		coord  []interface{}
+		value  float64
+		gold   float64
+		attr   map[string]interface{}
+	)
+	path = "data/twitter_tweet.json"
+	if raw, err = ioutil.ReadFile(path); err != nil {
+		t.Fatalf("Could not read data file: %v", path)
+	}
+	if err = Unmarshal(raw, &parsed); err != nil {
+		t.Fatalf("Could not parse Twitter user: %v", err)
+	}
+	place = (*parsed)["place"].(map[string]interface{})
+	bbox = place["bounding_box"].(map[string]interface{})
+	coord = bbox["coordinates"].([]interface{})[0].([]interface{})
+
+	value = coord[0].([]interface{})[0].(float64)
+	gold = -122.513682
+	if value != gold {
+		t.Fatalf("Bad coord: %v, wanted : %v", value, gold)
+	}
+
+	attr = place["attributes"].(map[string]interface{})
+	if len(attr) != 0 {
+		t.Fatalf("Wrong length for empty attributes object")
+	}
+}
+
 func TestParseTwitterTimelineToType(t *testing.T) {
 	var (
 		parsed = &Timeline{}
 		raw    []byte
 		err    error
 		path   string
+		gold   string
+		value  string
 	)
 	path = "data/twitter_timeline.json"
 	if raw, err = ioutil.ReadFile(path); err != nil {
@@ -205,7 +246,15 @@ func TestParseTwitterTimelineToType(t *testing.T) {
 	if err = Unmarshal(raw, &parsed); err != nil {
 		t.Fatalf("Could not parse Twitter user: %v", err)
 	}
+	if len(*parsed) != 100 {
+		t.Fatalf("Expected 100 nested Tweets, got: %v", len(*parsed))
+	}
 	if (*parsed)[0]["text"].(string)[0:15] != "We are updating" {
 		t.Fatalf("Could not parse nested structured Tweet text.")
+	}
+	gold = "210090093417992192"
+	value = (*parsed)[56]["id_str"].(string)
+	if value != gold {
+		t.Fatalf("Tweet 57 has ID %v, expected %v.", value, gold)
 	}
 }
