@@ -286,6 +286,7 @@ func TestDecode(t *testing.T) {
 		"data/twitter_tweet2.json",
 		"data/twitter_tweet3.json",
 		"data/twitter_tweet4.json",
+		"data/twitter_tweet5.json",
 	}
 	for _, path = range paths {
 		if raw, err = ioutil.ReadFile(path); err != nil {
