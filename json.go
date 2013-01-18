@@ -110,7 +110,8 @@ func (s *State) readString() (err error) {
 		buf     *bytes.Buffer
 		atstart bool = false
 		more    bool = true
-		utf     bool = false
+		escaped bool = false
+		escape  bool = false
 	)
 	for atstart == false {
 		c = s.data[s.i]
@@ -137,42 +138,37 @@ func (s *State) readString() (err error) {
 		c = s.data[s.i]
 		switch {
 		case c == '\\':
-			buf.Write(s.data[start:s.i])
-			switch {
-			case len(s.data) > s.i+8 && s.data[s.i+1] == 'U':
-				fallthrough
-			case len(s.data) > s.i+6 && s.data[s.i+1] == 'u':
-				fallthrough
-			case len(s.data) > s.i+4 && s.data[s.i+1] == 'x':
-				utf = true
-				buf.WriteString("\\")
-			case len(s.data) > s.i+1 && s.data[s.i+1] == '\\':
-				utf = true
-				buf.WriteString("\\\\")
-				s.i++
-			case len(s.data) > s.i+1 && strings.IndexAny(string(s.data[s.i+1]), "abfnrtv") != -1:
-				utf = true
-				buf.WriteString("\\")
-			}
-			s.i++
+			escape = true
+			escaped = true
+			break
+		case escape == true && c == '/':
+			// Skip the backslash
+			buf.Write(s.data[start:s.i-1])
 			start = s.i
+			escape = false
+			break
 		case c == '"':
-			more = false
+			if escape == false {
+				more = false
+			} else {
+				escape = false
+			}
+			break
 		case s.i >= len(s.data)-1:
 			return fmt.Errorf("No string terminator")
+		default:
+			escape = false
+			break
 		}
 		s.i++
 	}
 	buf.Write(s.data[start : s.i-1])
 	s.v = buf.String()
-	if utf == true {
+	if escaped == true {
 		var utfstr = s.v.(string)
-		utfstr = strings.Replace(utfstr, "\"", "\\\"", -1)
 		utfstr = fmt.Sprintf("\"%v\"", utfstr)
 		if s.v, err = strconv.Unquote(utfstr); err == nil {
 			s.v = decodeSurrogates(s.v.(string))
-		} else {
-			fmt.Printf("%v %v\n", err, utfstr)
 		}
 	}
 	return

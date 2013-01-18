@@ -77,6 +77,10 @@ var cases = map[string]TestCase{
 		Raw: "\"10\\\\\b10\"",
 		Result: "10\\\b10",
 	},
+	"String with escaped forward slash": TestCase{
+		Raw: "\"\\\\\\/\"",
+		Result: "\\/",
+	},
 	"Object": TestCase{
 		Raw: "{\"foo\":\"bar\"}",
 		Result: map[string]interface{}{
