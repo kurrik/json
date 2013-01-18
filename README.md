@@ -25,6 +25,16 @@ BenchmarkUntypedBucket  1000000      2747 ns/op
 This library also performs escaped UTF-8 entity decoding on strings, so you
 get the raw runes instead of escaped `\u####` sequences.
 
+Maturity
+--------
+This is a relatively new JSON parser so there's certainly edge cases
+which may throw errors or otherwise parse incorrectly.  Please file bugs /
+submit tests!  I'm happy to fix issues.
+
+That being said, this library is very compatible with Twitter's JSON encoding.
+It has been able to parse messages from Twitter's 1% stream for hours without
+issue.
+
 Installing
 ----------
 Run
