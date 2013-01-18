@@ -174,8 +174,6 @@ func (s *State) readString() (err error) {
 		utfstr = fmt.Sprintf("\"%v\"", utfstr)
 		if s.v, err = strconv.Unquote(utfstr); err == nil {
 			s.v = decodeSurrogates(s.v.(string))
-		} else {
-			fmt.Println(utfstr)
 		}
 	}
 	return
