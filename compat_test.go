@@ -81,6 +81,10 @@ var cases = map[string]TestCase{
 		Raw: "\"\\\\\\/\"",
 		Result: "\\/",
 	},
+	"String with just backslash": TestCase{
+		Raw: "\"\\\\\"",
+		Result: "\\",
+	},
 	"Object": TestCase{
 		Raw: "{\"foo\":\"bar\"}",
 		Result: map[string]interface{}{

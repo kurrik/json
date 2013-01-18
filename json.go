@@ -129,6 +129,8 @@ func (s *State) readString() (err error) {
 		case c == ']':
 			s.i++
 			return EndArray{}
+		default:
+			return fmt.Errorf("Invalid string char: %v", c)
 		}
 	}
 	s.i++
@@ -137,9 +139,12 @@ func (s *State) readString() (err error) {
 	for more {
 		c = s.data[s.i]
 		switch {
-		case c == '\\':
+		case escape == false && c == '\\':
 			escape = true
 			escaped = true
+			break
+		case escape == true && c == '\\':
+			escape = false
 			break
 		case escape == true && c == '/':
 			// Skip the backslash
@@ -169,6 +174,8 @@ func (s *State) readString() (err error) {
 		utfstr = fmt.Sprintf("\"%v\"", utfstr)
 		if s.v, err = strconv.Unquote(utfstr); err == nil {
 			s.v = decodeSurrogates(s.v.(string))
+		} else {
+			fmt.Println(utfstr)
 		}
 	}
 	return
