@@ -274,3 +274,24 @@ func TestParseEmptyTwitterTimelineToType(t *testing.T) {
 	}
 }
 
+func TestDecode(t *testing.T) {
+	var (
+		parsed map[string]interface{}
+		path   string
+		paths  []string
+		raw    []byte
+		err    error
+	)
+	paths = []string{
+		"data/twitter_tweet2.json",
+		"data/twitter_tweet3.json",
+	}
+	for _, path = range paths {
+		if raw, err = ioutil.ReadFile(path); err != nil {
+			t.Fatalf("Could not read data file: %v", path)
+		}
+		if err = Unmarshal(raw, &parsed); err != nil {
+			t.Fatalf("Could not parse %v: %v", path, err)
+		}
+	}
+}

@@ -146,6 +146,13 @@ func (s *State) readString() (err error) {
 			case len(s.data) > s.i+4 && s.data[s.i+1] == 'x':
 				utf = true
 				buf.WriteString("\\")
+			case len(s.data) > s.i+1 && s.data[s.i+1] == '\\':
+				utf = true
+				buf.WriteString("\\\\")
+				s.i++
+			case len(s.data) > s.i+1 && strings.IndexAny(string(s.data[s.i+1]), "abfnrtv") != -1:
+				utf = true
+				buf.WriteString("\\")
 			}
 			s.i++
 			start = s.i
@@ -164,6 +171,8 @@ func (s *State) readString() (err error) {
 		utfstr = fmt.Sprintf("\"%v\"", utfstr)
 		if s.v, err = strconv.Unquote(utfstr); err == nil {
 			s.v = decodeSurrogates(s.v.(string))
+		} else {
+			fmt.Printf("%v %v\n", err, utfstr)
 		}
 	}
 	return

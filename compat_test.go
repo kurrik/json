@@ -61,6 +61,22 @@ var cases = map[string]TestCase{
 		Raw: "\"\\xF0\\x9D\\x84\\x9E\"",
 		Result: "𝄞",
 	},
+	"String with encoded UTF-8 and backslash": TestCase{
+		Raw: "\"10\\\\10 ~ \\u2764\"",
+		Result: "10\\10 ~ ❤",
+	},
+	"String with backslash": TestCase{
+		Raw: "\"10\\\\10\"",
+		Result: "10\\10",
+	},
+	"String with backslash and tab": TestCase{
+		Raw: "\"10\\\\\t10\"",
+		Result: "10\\	10",
+	},
+	"String with backslash and backspace": TestCase{
+		Raw: "\"10\\\\\b10\"",
+		Result: "10\\\b10",
+	},
 	"Object": TestCase{
 		Raw: "{\"foo\":\"bar\"}",
 		Result: map[string]interface{}{
@@ -144,11 +160,16 @@ func TestCases(t *testing.T) {
 	)
 	for desc, testcase := range cases {
 		if err = Unmarshal([]byte(testcase.Raw), &decode); err != nil {
-			t.Fatalf("Error decoding '%v'", desc)
+			t.Fatalf("Error decoding '%v': %v", desc, err)
 		}
 		if !reflect.DeepEqual(decode, testcase.Result) {
 			t.Logf("%v\n", reflect.TypeOf(decode))
 			t.Logf("%v\n", reflect.TypeOf(testcase.Result))
+			if reflect.TypeOf(decode) == reflect.TypeOf("") {
+				t.Logf("Decode: %v\n", []byte(decode.(string)))
+				t.Logf("Expected: %v\n",
+					[]byte(testcase.Result.(string)))
+			}
 			t.Fatalf("Problem decoding '%v' Expected: %v, Got %v",
 				desc, testcase.Result, decode)
 		}
