@@ -261,7 +261,7 @@ func TestParseTwitterTimelineToType(t *testing.T) {
 
 func TestParseEmptyTwitterTimelineToType(t *testing.T) {
 	var (
-		parsed = &Timeline{}
+		parsed = Timeline{}
 		raw    []byte
 		err    error
 	)
@@ -269,8 +269,8 @@ func TestParseEmptyTwitterTimelineToType(t *testing.T) {
 	if err = Unmarshal(raw, &parsed); err != nil {
 		t.Fatalf("Could not parse Twitter timeline: %v", err)
 	}
-	if len(*parsed) != 0 {
-		t.Fatalf("Expected 0 Tweets, got: %v", len(*parsed))
+	if len(parsed) != 0 {
+		t.Fatalf("Expected 0 Tweets, got: %v", len(parsed))
 	}
 }
 

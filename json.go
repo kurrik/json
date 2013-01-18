@@ -332,6 +332,7 @@ func (s *State) readArray() (err error) {
 	s.i++
 	var (
 		a []interface{}
+		c uint = 0
 	)
 	a = make([]interface{}, 0, 10)
 	for {
@@ -339,8 +340,12 @@ func (s *State) readArray() (err error) {
 			if _, ok := err.(EndArray); !ok {
 				return
 			}
+			if c == 0 {
+				break
+			}
 		}
 		a = append(a, s.v)
+		c++
 		if _, ok := err.(EndArray); ok {
 			break
 		}
@@ -401,6 +406,9 @@ func Unmarshal(data []byte, v interface{}) error {
 	if !svt.AssignableTo(rvt) {
 		if rv.Kind() != reflect.Slice && sv.Kind() != reflect.Slice {
 			return fmt.Errorf("Cannot assign %v to %v", svt, rvt)
+		}
+		if sv.Len() == 0 {
+			return nil
 		}
 		var (
 			mapi  map[string]interface{}

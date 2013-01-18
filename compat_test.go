@@ -91,6 +91,12 @@ var cases = map[string]TestCase{
 			"foo": map[string]interface{}{},
 		},
 	},
+	"Object with empty nested array": TestCase{
+		Raw: "{\"foo\": []}",
+		Result: map[string]interface{}{
+			"foo": []interface{}{},
+		},
+	},
 	"Array": TestCase{
 		Raw: "[1234,\"foobar\"]",
 		Result: []interface{}{
@@ -117,6 +123,16 @@ var cases = map[string]TestCase{
 		Result: []interface{}{
 			int64(1234),
 			"foobar",
+		},
+	},
+	"Array with no contents": TestCase{
+		Raw: "[]",
+		Result: []interface{}{},
+	},
+	"Array with empty object": TestCase{
+		Raw: "[{}]",
+		Result: []interface{}{
+			map[string]interface{}{},
 		},
 	},
 }
