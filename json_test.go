@@ -180,7 +180,7 @@ func TestParseTwitterTimeline(t *testing.T) {
 		t.Fatalf("Could not read data file: %v", path)
 	}
 	if err = Unmarshal(raw, &parsed); err != nil {
-		t.Fatalf("Could not parse Twitter user: %v", err)
+		t.Fatalf("Could not parse Twitter timeline: %v", err)
 	}
 	if len(parsed) != 100 {
 		t.Fatalf("Expected 100 nested Tweets, got: %v", len(parsed))
@@ -212,7 +212,7 @@ func TestParseTwitterTweetToType(t *testing.T) {
 		t.Fatalf("Could not read data file: %v", path)
 	}
 	if err = Unmarshal(raw, &parsed); err != nil {
-		t.Fatalf("Could not parse Twitter user: %v", err)
+		t.Fatalf("Could not parse Twitter Tweet: %v", err)
 	}
 	place = (*parsed)["place"].(map[string]interface{})
 	bbox = place["bounding_box"].(map[string]interface{})
@@ -244,7 +244,7 @@ func TestParseTwitterTimelineToType(t *testing.T) {
 		t.Fatalf("Could not read data file: %v", path)
 	}
 	if err = Unmarshal(raw, &parsed); err != nil {
-		t.Fatalf("Could not parse Twitter user: %v", err)
+		t.Fatalf("Could not parse Twitter timeline: %v", err)
 	}
 	if len(*parsed) != 100 {
 		t.Fatalf("Expected 100 nested Tweets, got: %v", len(*parsed))
@@ -258,3 +258,19 @@ func TestParseTwitterTimelineToType(t *testing.T) {
 		t.Fatalf("Tweet 57 has ID %v, expected %v.", value, gold)
 	}
 }
+
+func TestParseEmptyTwitterTimelineToType(t *testing.T) {
+	var (
+		parsed = &Timeline{}
+		raw    []byte
+		err    error
+	)
+	raw = []byte("[]")
+	if err = Unmarshal(raw, &parsed); err != nil {
+		t.Fatalf("Could not parse Twitter timeline: %v", err)
+	}
+	if len(*parsed) != 0 {
+		t.Fatalf("Expected 0 Tweets, got: %v", len(*parsed))
+	}
+}
+
