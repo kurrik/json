@@ -49,6 +49,10 @@ var cases = map[string]TestCase{
 		Raw: "\"\\u6211\\u7231\\u4f60\"",
 		Result: "我爱你",
 	},
+	"String with unencoded UTF-8": TestCase{
+		Raw: "\"我爱你\"",
+		Result: "我爱你",
+	},
 	"String with big-U encoded multibyte UTF-8": TestCase{
 		Raw: "\"\\U0001D11E\"",
 		Result: "𝄞",
