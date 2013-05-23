@@ -34,6 +34,16 @@ const (
 	NULL
 )
 
+func clamp(val int, min int, max int) int {
+	if val > max {
+		val = max
+	}
+	if val < min {
+		val = min
+	}
+	return val
+}
+
 type Event struct {
 	Type  int
 	Index int
@@ -67,16 +77,24 @@ func (s *State) Read() (err error) {
 	case ESCAPE:
 		err = fmt.Errorf("JSON should not start with escape")
 	default:
-		b := string(s.data[s.i-10 : s.i])
-		c := string(s.data[s.i : s.i+1])
-		e := string(s.data[s.i+1 : s.i+10])
-		err = fmt.Errorf("Unrecognized type in %v -->%v<-- %v", b, c, e)
+		length := len(s.data) - 1
+		idx := clamp(s.i, 0, length)
+		max := clamp(idx + 10, 0, length)
+		min := clamp(idx - 10, 0, length)
+		mid := clamp(s.i + 1, idx, length)
+		b := string(s.data[min : idx])
+		c := string(s.data[idx : mid])
+		e := string(s.data[mid : max])
+		err = fmt.Errorf("Unrecognized type in '%v -->%v<-- %v'", b, c, e)
 	}
 	return
 }
 
 func (s *State) nextType() int {
 	for {
+		if s.i >= len(s.data) {
+			return -1
+		}
 		c := s.data[s.i]
 		switch {
 		case c == ' ':
@@ -98,6 +116,8 @@ func (s *State) nextType() int {
 			return BOOL
 		case c == 'n':
 			return NULL
+		default:
+			return -1
 		}
 	}
 	return -1

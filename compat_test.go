@@ -16,12 +16,28 @@ package json
 
 import (
 	"reflect"
+	"fmt"
 	"testing"
 )
 
 type TestCase struct {
 	Raw    string
 	Result interface{}
+}
+
+var errors = map[string]TestCase{
+	"HTML": TestCase{
+		Raw: "<!DOCTYPE html><html><body>Foo</body></html>",
+		Result: "Unrecognized type in ' --><<-- !DOCTYPE '",
+	},
+	"Blank": TestCase{
+		Raw: "",
+		Result: "Unrecognized type in ' --><-- '",
+	},
+	"Empty": TestCase{
+		Raw: "    ",
+		Result: "Unrecognized type in '    --><-- '",
+	},
 }
 
 var cases = map[string]TestCase{
@@ -184,6 +200,25 @@ func TestCases(t *testing.T) {
 			}
 			t.Fatalf("Problem decoding '%v' Expected: %v, Got %v",
 				desc, testcase.Result, decode)
+		}
+	}
+}
+
+func TestErrors(t *testing.T) {
+	var (
+		err error
+		str string
+		res string
+		decode interface{}
+	)
+	for desc, tcase := range errors {
+		if err = Unmarshal([]byte(tcase.Raw), &decode); err == nil {
+			t.Fatalf("Expected error for '%v': %v", desc, tcase.Raw)
+		}
+		str = fmt.Sprintf("%v", err)
+		res = tcase.Result.(string)
+		if str != res {
+			t.Fatalf("Invalid error '%v' expected '%v'", str, res)
 		}
 	}
 }
