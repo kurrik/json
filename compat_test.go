@@ -73,8 +73,8 @@ var cases = map[string]TestCase{
 		Raw: "\"\\U0001D11E\"",
 		Result: "𝄞",
 	},
-	"String with small-U encoded multibyte UTF-8": TestCase{
-		Raw: "\"\\uD834\\uDD1E\"",
+	"String with octal encoded multibyte UTF-8": TestCase{
+		Raw: "\"\\360\\235\\204\\236\"",
 		Result: "𝄞",
 	},
 	"String with hex encoded multibyte UTF-8": TestCase{
