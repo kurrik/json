@@ -15,8 +15,8 @@
 package json
 
 import (
-	"reflect"
 	"fmt"
+	"reflect"
 	"testing"
 )
 
@@ -27,66 +27,72 @@ type TestCase struct {
 
 var errors = map[string]TestCase{
 	"HTML": TestCase{
-		Raw: "<!DOCTYPE html><html><body>Foo</body></html>",
+		Raw:    "<!DOCTYPE html><html><body>Foo</body></html>",
 		Result: "Unrecognized type in ' --><<-- !DOCTYPE '",
 	},
 	"Blank": TestCase{
-		Raw: "",
+		Raw:    "",
 		Result: "Unrecognized type in ' --><-- '",
 	},
 	"Empty": TestCase{
-		Raw: "    ",
+		Raw:    "    ",
 		Result: "Unrecognized type in '    --><-- '",
 	},
 }
 
 var cases = map[string]TestCase{
 	"Number": TestCase{
-		Raw: "1234",
+		Raw:    "1234",
 		Result: int64(1234),
 	},
 	"Number - negative": TestCase{
-		Raw: "-1234",
+		Raw:    "-1234",
 		Result: int64(-1234),
 	},
 	"Number - float": TestCase{
-		Raw: "1234.5678",
+		Raw:    "1234.5678",
 		Result: float64(1234.5678),
 	},
 	"Number - negative float": TestCase{
-		Raw: "-1234.5678",
+		Raw:    "-1234.5678",
 		Result: float64(-1234.5678),
 	},
 	"String": TestCase{
-		Raw: "\"foobar\"",
+		Raw:    "\"foobar\"",
 		Result: "foobar",
 	},
 	"String with encoded UTF-8": TestCase{
-		Raw: "\"\\u6211\\u7231\\u4f60\"",
+		Raw:    "\"\\u6211\\u7231\\u4f60\"",
 		Result: "我爱你",
 	},
 	"String with unencoded UTF-8": TestCase{
-		Raw: "\"我爱你\"",
+		Raw:    "\"我爱你\"",
 		Result: "我爱你",
 	},
 	"String with big-U encoded multibyte UTF-8": TestCase{
-		Raw: "\"\\U0001D11E\"",
+		Raw:    "\"\\U0001D11E\"",
 		Result: "𝄞",
 	},
 	"String with octal encoded multibyte UTF-8": TestCase{
-		Raw: "\"\\360\\235\\204\\236\"",
+		Raw:    "\"\\360\\235\\204\\236\"",
 		Result: "𝄞",
 	},
 	"String with hex encoded multibyte UTF-8": TestCase{
-		Raw: "\"\\xF0\\x9D\\x84\\x9E\"",
+		Raw:    "\"\\xF0\\x9D\\x84\\x9E\"",
 		Result: "𝄞",
 	},
 	"String with encoded UTF-8 and backslash": TestCase{
-		Raw: "\"10\\\\10 ~ \\u2764\"",
+		Raw:    "\"10\\\\10 ~ \\u2764\"",
 		Result: "10\\10 ~ ❤",
 	},
+	"Invalid string with small-U encoded multibyte UTF-8": TestCase{
+		Raw:    "\"\\uD834\\uDD1E\"",
+		Result: "��",
+		// This is pretty dependent on implementation
+		// but I'd like to get a heads up if it changes.
+	},
 	"String with backslash": TestCase{
-		Raw: "\"10\\\\10\"",
+		Raw:    "\"10\\\\10\"",
 		Result: "10\\10",
 	},
 	"String with backslash and tab": TestCase{
@@ -94,15 +100,15 @@ var cases = map[string]TestCase{
 		Result: "10\\	10",
 	},
 	"String with backslash and backspace": TestCase{
-		Raw: "\"10\\\\\b10\"",
+		Raw:    "\"10\\\\\b10\"",
 		Result: "10\\\b10",
 	},
 	"String with escaped forward slash": TestCase{
-		Raw: "\"\\\\\\/\"",
+		Raw:    "\"\\\\\\/\"",
 		Result: "\\/",
 	},
 	"String with just backslash": TestCase{
-		Raw: "\"\\\\\"",
+		Raw:    "\"\\\\\"",
 		Result: "\\",
 	},
 	"Object": TestCase{
@@ -170,7 +176,7 @@ var cases = map[string]TestCase{
 		},
 	},
 	"Array with no contents": TestCase{
-		Raw: "[]",
+		Raw:    "[]",
 		Result: []interface{}{},
 	},
 	"Array with empty object": TestCase{
@@ -206,9 +212,9 @@ func TestCases(t *testing.T) {
 
 func TestErrors(t *testing.T) {
 	var (
-		err error
-		str string
-		res string
+		err    error
+		str    string
+		res    string
 		decode interface{}
 	)
 	for desc, tcase := range errors {
