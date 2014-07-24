@@ -81,15 +81,17 @@ var cases = map[string]TestCase{
 		Raw:    "\"\\xF0\\x9D\\x84\\x9E\"",
 		Result: "𝄞",
 	},
+	"String with hex encoded single byte UTF-8": TestCase{
+		Raw:    "\"\\xE2\\x9D\\xA4\"",
+		Result: "❤",
+	},
 	"String with encoded UTF-8 and backslash": TestCase{
 		Raw:    "\"10\\\\10 ~ \\u2764\"",
 		Result: "10\\10 ~ ❤",
 	},
 	"Invalid string with small-U encoded multibyte UTF-8": TestCase{
 		Raw:    "\"\\uD834\\uDD1E\"",
-		Result: "��",
-		// This is pretty dependent on implementation
-		// but I'd like to get a heads up if it changes.
+		Result: "𝄞",
 	},
 	"String with backslash": TestCase{
 		Raw:    "\"10\\\\10\"",
@@ -110,6 +112,10 @@ var cases = map[string]TestCase{
 	"String with just backslash": TestCase{
 		Raw:    "\"\\\\\"",
 		Result: "\\",
+	},
+	"String with encoded emoji": TestCase{
+		Raw: "\"EMOJI \\ud83d\\ude04 \\ud83d\\ude03 \\ud83d\\ude00 \\ud83d\\ude0a\"",
+		Result: "EMOJI 😄 😃 😀 😊",
 	},
 	"Object": TestCase{
 		Raw: "{\"foo\":\"bar\"}",

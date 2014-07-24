@@ -79,12 +79,12 @@ func (s *State) Read() (err error) {
 	default:
 		length := len(s.data) - 1
 		idx := clamp(s.i, 0, length)
-		max := clamp(idx + 10, 0, length)
-		min := clamp(idx - 10, 0, length)
-		mid := clamp(s.i + 1, idx, length)
-		b := string(s.data[min : idx])
-		c := string(s.data[idx : mid])
-		e := string(s.data[mid : max])
+		max := clamp(idx+10, 0, length)
+		min := clamp(idx-10, 0, length)
+		mid := clamp(s.i+1, idx, length)
+		b := string(s.data[min:idx])
+		c := string(s.data[idx:mid])
+		e := string(s.data[mid:max])
 		err = fmt.Errorf("Unrecognized type in '%v -->%v<-- %v'", b, c, e)
 	}
 	return
@@ -168,8 +168,36 @@ func (s *State) readString() (err error) {
 			break
 		case escape == true && c == '/':
 			// Skip the backslash
-			buf.Write(s.data[start:s.i-1])
+			buf.Write(s.data[start : s.i-1])
 			start = s.i
+			escape = false
+			break
+		case escape == true && c == 'u':
+			// TODO: Handle more encoded cases so that we don't need
+			// the second pass for surrogate pairs down below.
+			// However, Go specifically calls out surrogates
+			// split with \u1234\u5678 encoding as invalid in
+			// http://golang.org/ref/spec#Rune_literals so it's
+			// unlikely to get direct support.
+			buf.Write(s.data[start : s.i-1])
+			var (
+				r1, r2 rune
+				perr   error
+			)
+			if r1, perr = s.getSmallURune(s.i - 1); perr != nil {
+				return perr
+			}
+			s.i += 4 // On the last char of the first \u1234 value.
+			if utf16.IsSurrogate(r1) {
+				if r2, perr = s.getSmallURune(s.i + 1); perr != nil {
+					return perr
+				}
+				buf.WriteRune(utf16.DecodeRune(r1, r2))
+				s.i += 6 // On the last char of the second value.
+			} else {
+				buf.WriteRune(r1)
+			}
+			start = s.i + 1
 			escape = false
 			break
 		case c == '"':
@@ -196,6 +224,20 @@ func (s *State) readString() (err error) {
 			s.v = decodeSurrogates(s.v.(string))
 		}
 	}
+	return
+}
+
+func (s *State) getSmallURune(start int) (r rune, err error) {
+	r = 0
+	var i uint64
+	if s.data[start] != '\\' || s.data[start+1] != 'u' {
+		return
+	}
+	substr := string(s.data[start+2 : start+6]) // '\u1234'
+	if i, err = strconv.ParseUint(substr, 16, 16); err != nil {
+		err = fmt.Errorf("Could not parse '\\u%v'", substr)
+	}
+	r = rune(i)
 	return
 }
 
