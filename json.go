@@ -16,7 +16,7 @@ package json
 
 import (
 	"bytes"
-	"fmt"
+	"errors"
 	"reflect"
 	"strconv"
 	"strings"
@@ -75,7 +75,7 @@ func (s *State) Read() (err error) {
 	case NULL:
 		err = s.readNull()
 	case ESCAPE:
-		err = fmt.Errorf("JSON should not start with escape")
+		err = errors.New("JSON should not start with escape")
 	default:
 		length := len(s.data) - 1
 		idx := clamp(s.i, 0, length)
@@ -85,7 +85,7 @@ func (s *State) Read() (err error) {
 		b := string(s.data[min:idx])
 		c := string(s.data[idx:mid])
 		e := string(s.data[mid:max])
-		err = fmt.Errorf("Unrecognized type in '%v -->%v<-- %v'", b, c, e)
+		err = errors.New("Unrecognized type in '" + b + " -->" + c + "<-- " + e + "'")
 	}
 	return
 }
@@ -150,7 +150,7 @@ func (s *State) readString() (err error) {
 			s.i++
 			return EndArray{}
 		default:
-			return fmt.Errorf("Invalid string char: %v", c)
+			return errors.New("Invalid string char: " + string(c))
 		}
 	}
 	s.i++
@@ -208,7 +208,7 @@ func (s *State) readString() (err error) {
 			}
 			break
 		case s.i >= len(s.data)-1:
-			return fmt.Errorf("No string terminator")
+			return errors.New("No string terminator")
 		default:
 			escape = false
 			break
@@ -219,7 +219,7 @@ func (s *State) readString() (err error) {
 	s.v = buf.String()
 	if escaped == true {
 		var utfstr = s.v.(string)
-		utfstr = fmt.Sprintf("\"%v\"", utfstr)
+		utfstr = "\"" + utfstr + "\"" // fmt.Sprintf("\"%v\"", utfstr)
 		if s.v, err = strconv.Unquote(utfstr); err == nil {
 			s.v = decodeSurrogates(s.v.(string))
 		}
@@ -235,7 +235,8 @@ func (s *State) getSmallURune(start int) (r rune, err error) {
 	}
 	substr := string(s.data[start+2 : start+6]) // '\u1234'
 	if i, err = strconv.ParseUint(substr, 16, 16); err != nil {
-		err = fmt.Errorf("Could not parse '\\u%v'", substr)
+		err = errors.New("Could not parse '\\u" + substr + "'")
+		//err = fmt.Errorf("Could not parse '\\u%v'", substr)
 	}
 	r = rune(i)
 	return
@@ -276,7 +277,7 @@ func (s *State) readNumber() (err error) {
 			val = 0
 			places = 1
 		default:
-			return fmt.Errorf("Bad num char: %v", string([]byte{c}))
+			return errors.New("Bad num char: " + string([]byte{c}))
 		}
 		if s.i >= len(s.data)-1 {
 			more = false
@@ -341,7 +342,7 @@ func (s *State) readComma() (err error) {
 			s.i++
 			return EndArray{}
 		case s.i >= len(s.data)-1:
-			return fmt.Errorf("No comma")
+			return errors.New("No comma")
 		}
 		s.i++
 	}
@@ -355,7 +356,7 @@ func (s *State) readColon() (err error) {
 		case s.data[s.i] == ':':
 			more = false
 		case s.i >= len(s.data)-1:
-			return fmt.Errorf("No colon")
+			return errors.New("No colon")
 		}
 		s.i++
 	}
@@ -440,7 +441,7 @@ func (s *State) readBool() (err error) {
 		s.i += 5
 		s.v = false
 	} else {
-		err = fmt.Errorf("Could not parse boolean")
+		err = errors.New("Could not parse boolean")
 	}
 	return
 }
@@ -450,7 +451,7 @@ func (s *State) readNull() (err error) {
 		s.i += 4
 		s.v = nil
 	} else {
-		err = fmt.Errorf("Could not parse null")
+		err = errors.New("Could not parse null")
 	}
 	return
 }
@@ -462,7 +463,7 @@ func Unmarshal(data []byte, v interface{}) error {
 	}
 	rv := reflect.ValueOf(v)
 	if rv.Kind() != reflect.Ptr || rv.IsNil() {
-		return fmt.Errorf("Need a pointer, got %v", reflect.TypeOf(v))
+		return errors.New("Need a pointer, got " + reflect.TypeOf(v).String())
 	}
 	for rv.Kind() == reflect.Ptr {
 		rv = rv.Elem()
@@ -477,7 +478,8 @@ func Unmarshal(data []byte, v interface{}) error {
 	)
 	if !svt.AssignableTo(rvt) {
 		if rv.Kind() != reflect.Slice && sv.Kind() != reflect.Slice {
-			return fmt.Errorf("Cannot assign %v to %v", svt, rvt)
+			return errors.New("Cannot assign " + svt.String() + " to " + rvt.String())
+			//return fmt.Errorf("Cannot assign %v to %v", svt, rvt)
 		}
 		if sv.Len() == 0 {
 			return nil
@@ -491,7 +493,8 @@ func Unmarshal(data []byte, v interface{}) error {
 		)
 		_, ismap = sv.Index(0).Interface().(map[string]interface{})
 		if !(ismap && mapt.AssignableTo(rvte)) {
-			return fmt.Errorf("Cannot assign %v to %v", svte, rvte)
+			return errors.New("Cannot assign " + svte.String() + " to " + rvte.String())
+			//return fmt.Errorf("Cannot assign %v to %v", svte, rvte)
 		}
 		var (
 			ssv = reflect.MakeSlice(rvt, sv.Len(), sv.Cap())
