@@ -25,7 +25,7 @@ type TestCase struct {
 	Result interface{}
 }
 
-var errors = map[string]TestCase{
+var tcerrors = map[string]TestCase{
 	"HTML": TestCase{
 		Raw:    "<!DOCTYPE html><html><body>Foo</body></html>",
 		Result: "Unrecognized type in ' --><<-- !DOCTYPE '",
@@ -114,7 +114,7 @@ var cases = map[string]TestCase{
 		Result: "\\",
 	},
 	"String with encoded emoji": TestCase{
-		Raw: "\"EMOJI \\ud83d\\ude04 \\ud83d\\ude03 \\ud83d\\ude00 \\ud83d\\ude0a\"",
+		Raw:    "\"EMOJI \\ud83d\\ude04 \\ud83d\\ude03 \\ud83d\\ude00 \\ud83d\\ude0a\"",
 		Result: "EMOJI 😄 😃 😀 😊",
 	},
 	"Object": TestCase{
@@ -223,7 +223,7 @@ func TestErrors(t *testing.T) {
 		res    string
 		decode interface{}
 	)
-	for desc, tcase := range errors {
+	for desc, tcase := range tcerrors {
 		if err = Unmarshal([]byte(tcase.Raw), &decode); err == nil {
 			t.Fatalf("Expected error for '%v': %v", desc, tcase.Raw)
 		}
