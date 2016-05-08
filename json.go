@@ -219,7 +219,7 @@ func (s *State) readString() (err error) {
 	s.v = buf.String()
 	if escaped == true {
 		var utfstr = s.v.(string)
-		utfstr = "\"" + utfstr + "\"" // fmt.Sprintf("\"%v\"", utfstr)
+		utfstr = "\"" + utfstr + "\""
 		if s.v, err = strconv.Unquote(utfstr); err == nil {
 			s.v = decodeSurrogates(s.v.(string))
 		}
@@ -236,7 +236,6 @@ func (s *State) getSmallURune(start int) (r rune, err error) {
 	substr := string(s.data[start+2 : start+6]) // '\u1234'
 	if i, err = strconv.ParseUint(substr, 16, 16); err != nil {
 		err = errors.New("Could not parse '\\u" + substr + "'")
-		//err = fmt.Errorf("Could not parse '\\u%v'", substr)
 	}
 	r = rune(i)
 	return
@@ -479,7 +478,6 @@ func Unmarshal(data []byte, v interface{}) error {
 	if !svt.AssignableTo(rvt) {
 		if rv.Kind() != reflect.Slice && sv.Kind() != reflect.Slice {
 			return errors.New("Cannot assign " + svt.String() + " to " + rvt.String())
-			//return fmt.Errorf("Cannot assign %v to %v", svt, rvt)
 		}
 		if sv.Len() == 0 {
 			return nil
@@ -494,7 +492,6 @@ func Unmarshal(data []byte, v interface{}) error {
 		_, ismap = sv.Index(0).Interface().(map[string]interface{})
 		if !(ismap && mapt.AssignableTo(rvte)) {
 			return errors.New("Cannot assign " + svte.String() + " to " + rvte.String())
-			//return fmt.Errorf("Cannot assign %v to %v", svte, rvte)
 		}
 		var (
 			ssv = reflect.MakeSlice(rvt, sv.Len(), sv.Cap())
